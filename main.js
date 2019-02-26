@@ -3,7 +3,7 @@ var abcWatcher = require('feed-watcher'),
     ap = "https://www.androidpolice.com/feed/",
     interval = 360; // interval to poll the feed in seconds
 var request = require('request');
-var webhookUrl = dealsWebhook; // stores the URL the response needs to be sent to - secret!
+var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
 
 console.log("Starting abcWatcher service...")
 
