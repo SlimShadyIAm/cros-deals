@@ -1,4 +1,4 @@
-var abcWatcher = require('feed-watcher'),
+var Watcher = require('feed-watcher'),
     abc = "https://www.aboutchromebooks.com/feed/",
     ap = "https://www.androidpolice.com/feed/",
     interval = 360; // interval to poll the feed in seconds
@@ -7,8 +7,8 @@ var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs 
 
 console.log("Starting abcWatcher service...")
 
-var abcWatcher = new abcWatcher(abc, interval);
-var apWatcher = new abcWatcher(abc, interval);
+var abcWatcher = new Watcher(abc, interval);
+var apWatcher = new Watcher(abc, interval);
 
 abcWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
