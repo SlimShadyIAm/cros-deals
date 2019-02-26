@@ -44,7 +44,7 @@ abcWatcher.on('new entries', function(entries) { // watch for new entries to the
                 description = description.substring(0, 150).concat("...");
             }
             
-            var summary = "A new deal has been posted on https://aboutchromebooks.com!"
+            var summary = "<@&550081231266643968> A new deal has been posted on https://aboutchromebooks.com!"
 
             // add the information specific to the blog post to the response object
             discordObj.embeds[0].description = description;
@@ -110,7 +110,7 @@ apWatcher.on('new entries', function(entries) { // watch for new entries to the 
                 description = description.substring(0, 150).concat("...");
             }
             
-            var summary = "A new deal has been posted on https://aboutchromebooks.com!"
+            var summary = "<@&550081231266643968> A new deal has been posted on https://aboutchromebooks.com!"
 
             // add the information specific to the blog post to the response object
             discordObj.embeds[0].description = description;
