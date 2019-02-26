@@ -12,6 +12,7 @@ var apWatcher = new abcWatcher(abc, interval);
 
 abcWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
+        console.log(entry);
         if (entry.categories.includes("Deals")) { // filter out non-deal related posts
             console.log("Attempting to send new post with title '" + entry.title + "'")
             var discordObj = { // build the response to send to Discord's webhook - base layout
@@ -78,6 +79,7 @@ abcWatcher.on('new entries', function(entries) { // watch for new entries to the
 
 apWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
+        console.log(entry);
         if ((entry.categories.includes("deal") || entry.categories.includes("deals") entry.categories.includes("Deal") || entry.categories.includes("Deals")) && (entry.categories.includes("chromebook") || entry.categories.includes("Chromebook") || entry.categories.includes("chromebooks") || entry.categories.includes("Chromebooks") || entry.categories.includes("chromeos") || entry.categories.includes("ChromeOS")) { // filter out non-deal related posts
             console.log("Attempting to send new post with title '" + entry.title)
             var discordObj = { // build the response to send to Discord's webhook - base layout
