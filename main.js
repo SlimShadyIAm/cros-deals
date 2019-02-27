@@ -8,7 +8,7 @@ var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs 
 console.log("Starting abcWatcher service...")
 
 var abcWatcher = new Watcher(abc, interval);
-var apWatcher = new Watcher(abc, interval);
+var apWatcher = new Watcher(ap, interval);
 
 abcWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
