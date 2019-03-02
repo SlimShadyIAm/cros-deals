@@ -80,7 +80,7 @@ abcWatcher.on('new entries', function(entries) { // watch for new entries to the
 apWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
         console.log(entry.title);
-        if ((entry.categories.includes("deal") || entry.categories.includes("deals") || entry.categories.includes("Deal") || entry.categories.includes("Deals") || entry.categories.includes("Sales") || entry.categories.includes("sales")) && ((entry.categories.includes("chromebook") || entry.categories.includes("Chromebook") || entry.categories.includes("chromebooks") || entry.categories.includes("Chromebooks") || entry.categories.includes("chromeos") || entry.categories.includes("ChromeOS")) || (entry.title.toLowerCase().includes("chromebook") || entry.title.toLowerCase().includes("chromebooks"))) { // filter out non-deal related posts
+        if ((entry.categories.includes("deal") || entry.categories.includes("deals") || entry.categories.includes("Deal") || entry.categories.includes("Deals") || entry.categories.includes("Sales") || entry.categories.includes("sales")) && ((entry.categories.includes("chromebook") || entry.categories.includes("Chromebook") || entry.categories.includes("chromebooks") || entry.categories.includes("Chromebooks") || entry.categories.includes("chromeos") || entry.categories.includes("ChromeOS")) || (entry.title.toLowerCase().includes("chromebook") || entry.title.toLowerCase().includes("chromebooks")))) { // filter out non-deal related posts
             console.log("Attempting to send new post with title '" + entry.title)
             var discordObj = { // build the response to send to Discord's webhook - base layout
                 "username": "AndroidPolice.com", 
