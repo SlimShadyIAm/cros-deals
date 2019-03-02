@@ -5,7 +5,7 @@ var Watcher = require('feed-watcher'),
 var request = require('request');
 var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
 
-console.log("Starting abcWatcher service...")
+console.log("Starting watcher service...")
 
 var abcWatcher = new Watcher(abc, interval);
 var apWatcher = new Watcher(ap, interval);
@@ -13,7 +13,7 @@ var apWatcher = new Watcher(ap, interval);
 abcWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
     entries.forEach(function(entry) {
         console.log(entry.title);
-        if (entry.categories.includes("Deals") || entry.title..toLowerCase().includes("deal")) { // filter out non-deal related posts
+        if (entry.categories.includes("Deals") || entry.title.toLowerCase().includes("deal")) { // filter out non-deal related posts
             console.log("Attempting to send new post with title '" + entry.title + "'")
             var discordObj = { // build the response to send to Discord's webhook - base layout
                 "username": "AboutChromebooks.com", 
