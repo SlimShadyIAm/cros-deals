@@ -1,7 +1,9 @@
-var Watcher = require("feed-watcher");
-var request = require("request");
+const Watcher = require("feed-watcher");
+const request = require("request");
+const stripTags = require("striptags");
+const he = require("he");
 
-var feeds = [
+const feeds = [
 	// list of feeds to watch
 	{
 		feed: "https://www.aboutchromebooks.com/feed/",
@@ -20,17 +22,18 @@ var feeds = [
 		mustHaveFilters: ["chromebook", "chromebooks", "chromeos"]
 	}
 ];
-var interval = 360; // interval to poll feeds
+var interval = 20; // interval to poll feeds
 
-var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
+// var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
+var webhookUrl =
+	"https://discordapp.com/api/webhooks/607778792274133013/37uldJBGAyZu4BHZNIWS1oafDiBR7UPo86LwMyTVTqAw0am2YT03RL9yA8kgaWvuzLk1";
 
 feeds.map(feed => {
-	const watcher = new Watcher(feed, interval);
+	const watcher = new Watcher(feed.feed, interval);
 	watcher.on("new entries", function(entries) {
 		// watch for new entries to the RSS feed
 		entries.forEach(function(entry) {
-			console.log(entry.title);
-			if (checkFilters) {
+			if (true) {
 				articleDetails = {
 					publisher: feed.name,
 					description: sanitizeArticle(entry.description),
@@ -38,22 +41,21 @@ feeds.map(feed => {
 					profilePicture: feed.profilePicture,
 					summary: `<@&550081231266643968> A new deal has been posted on ${
 						feed.name
-					} Click the title below to get more information.`
+					}. Click the title below to get more information.`
 				};
 
-				console.log(
-					"Attempting to send new post with title '" + entry.title + "'"
-				);
+				console.log(`Attempting to send new post with title ${entry.title}`);
 				var preparedObject = prepareObject(articleDetails);
 				sendEmbed(preparedObject);
 			} else {
-				console.log("Post filtered out, not ChromeOS related.");
+				console.log(`Post ${entry.title} filtered out, not ChromeOS related.`);
 			}
 		});
 	});
 	watcher.start().catch(function(error) {
 		console.error(error);
 	});
+	console.log(`Starting ${feed.name} watcher.`);
 });
 
 function checkFilters(articleCategories, filters, requiredFiters) {
@@ -86,17 +88,13 @@ function checkFilters(articleCategories, filters, requiredFiters) {
 }
 
 function sanitizeArticle(description) {
-	description
-		.replace(/[\r\n]/g, " ")
-		.replace(" .", ".") // we want to remove any line breaks from the blog post.
-		.replace(/<(?:.|\n)*?>/gm, "")
-		.replace("&nbsp;", " "); // for some reason they add HTML to the post content. Let's remove that.
+	description = stripTags(description);
+	description = he.decode(description);
 
-	if (description.length > 150) {
-		// truncate the description if more than 150 characters
-		description = description.substring(0, 150).concat("...");
+	if (description.length > 400) {
+		// truncate the description if more than 400 characters
+		description = description.substring(0, 400).concat("...");
 	}
-
 	return description;
 }
 
@@ -108,9 +106,9 @@ function prepareObject(articleDetails) {
 		content: articleDetails.summary,
 		embeds: [
 			{
-				description: articleDetails.entry.description,
+				description: articleDetails.description,
 				color: 3172587,
-				timestamp: null,
+				timestamp: articleDetails.entry.pubDate,
 				footer: {
 					icon_url:
 						"https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
@@ -143,6 +141,7 @@ function sendEmbed(embedObjectToSend) {
 		function(error, response, body) {
 			console.log("error:", error); // Print the error if one occurred
 			console.log("statusCode:", response && response.statusCode); // Print the response status code if a response was received
+			console.log("body:", body); // Print the response status code if a response was received
 		}
 	);
 }
