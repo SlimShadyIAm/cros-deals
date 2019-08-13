@@ -1,159 +1,148 @@
-var Watcher = require('feed-watcher'),
-    abc = "https://www.aboutchromebooks.com/feed/",
-    ap = "https://www.androidpolice.com/feed/",
-    interval = 360; // interval to poll the feed in seconds
-var request = require('request');
+var Watcher = require("feed-watcher");
+var request = require("request");
+
+var feeds = [
+	// list of feeds to watch
+	{
+		feed: "https://www.aboutchromebooks.com/feed/",
+		name: "AboutChromebooks.com",
+		profilePicture:
+			"https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
+		filters: ["deal", "deals"],
+		requiredFiters: []
+	},
+	{
+		feed: "https://www.androidpolice.com/feed/",
+		name: "AndroidPolice.com",
+		profilePicture:
+			"https://lh4.googleusercontent.com/-2lq9WcxRgB0/AAAAAAAAAAI/AAAAAAAAAQk/u15SBRi49fE/s250-c-k/photo.jpg",
+		filters: ["deal", "deals", "sale", "sales"],
+		mustHaveFilters: ["chromebook", "chromebooks", "chromeos"]
+	}
+];
+var interval = 360; // interval to poll feeds
+
 var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
 
-console.log("Starting watcher service...")
+feeds.map(feed => {
+	const watcher = new Watcher(feed, interval);
+	watcher.on("new entries", function(entries) {
+		// watch for new entries to the RSS feed
+		entries.forEach(function(entry) {
+			console.log(entry.title);
+			if (checkFilters) {
+				articleDetails = {
+					publisher: feed.name,
+					description: sanitizeArticle(entry.description),
+					entry: entry,
+					profilePicture: feed.profilePicture,
+					summary: `<@&550081231266643968> A new deal has been posted on ${
+						feed.name
+					} Click the title below to get more information.`
+				};
 
-var abcWatcher = new Watcher(abc, interval);
-var apWatcher = new Watcher(ap, interval);
+				console.log(
+					"Attempting to send new post with title '" + entry.title + "'"
+				);
+				var preparedObject = prepareObject(articleDetails);
+				sendEmbed(preparedObject);
+			} else {
+				console.log("Post filtered out, not ChromeOS related.");
+			}
+		});
+	});
+	watcher.start().catch(function(error) {
+		console.error(error);
+	});
+});
 
-abcWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
-    entries.forEach(function(entry) {
-        console.log(entry.title);
-        if (entry.categories.includes("Deals") || entry.title.toLowerCase().includes("deal")) { // filter out non-deal related posts
-            console.log("Attempting to send new post with title '" + entry.title + "'")
-            var discordObj = { // build the response to send to Discord's webhook - base layout
-                "username": "AboutChromebooks.com", 
-                "avatar_url": "",
-                "content": "Error finding category type!",
-                "embeds": [{
-                    "description": "Error finding post description!",
-                    "color": 3172587,
-                    "timestamp": null,
-                    // "image": {
-                    //     "url": null
-                    // },
-                    "footer": {
-                        "icon_url": "https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
-                        "text": "Error finding author name!"
-                    },
-                    "author": {
-                        "name": "Error finding post title!",
-                        "url": "Error finding link!",
-                    "icon_url": "https://cdn.discordapp.com/emojis/363434654000349184.png?v=1"
-                    }
-                }]
-            }
-            var description = entry.description.replace(/[\r\n]/g, ' ').replace(" .", '.') // we want to remove any line breaks from the blog post.
+function checkFilters(articleCategories, filters, requiredFiters) {
+	articleCategories.map(category => {
+		category.toLowerCase();
+	});
 
-            description = description.replace(/<(?:.|\n)*?>/gm, '').replace("&nbsp;", " "); // for some reason they add HTML to the post content. Let's remove that.
+	var found = false;
+	if (requiredFiters.length === 0) {
+		filters.map(filter => {
+			if (articleCategories.includes(filter)) {
+				found = true;
+			}
+		});
+	} else {
+		var foundRequired = false;
+		filters.map(filter => {
+			if (articleCategories.includes(filter)) {
+				found = true;
+			}
+		});
+		requiredFilters.map(filter => {
+			if (articleCategories.includes(filter)) {
+				foundRequired = true;
+			}
+		});
+		found = foundRequired && found;
+	}
+	return found;
+}
 
-            if (description.length > 150) { // truncate the description if more than 150 characters
-                description = description.substring(0, 150).concat("...");
-            }
-            
-            var summary = "<@&550081231266643968> A new deal has been posted on https://aboutchromebooks.com! Click the title below to get more information."
+function sanitizeArticle(description) {
+	description
+		.replace(/[\r\n]/g, " ")
+		.replace(" .", ".") // we want to remove any line breaks from the blog post.
+		.replace(/<(?:.|\n)*?>/gm, "")
+		.replace("&nbsp;", " "); // for some reason they add HTML to the post content. Let's remove that.
 
-            // add the information specific to the blog post to the response object
-            discordObj.embeds[0].description = description;
-            discordObj.embeds[0].timestamp = entry.pubDate;
-            discordObj.embeds[0].footer.text = entry.author;
-            discordObj.embeds[0].author.name = entry.title;
-            discordObj.embeds[0].author.url = entry.link;
-            // discordObj.embeds[0].image.url = entry.image.url;
-            discordObj.content = summary;
-            
-            // send the object via POST to Discord's webhook URL
+	if (description.length > 150) {
+		// truncate the description if more than 150 characters
+		description = description.substring(0, 150).concat("...");
+	}
 
-            var url = webhookUrl;
-            request({ 
-                url: url, 
-                method: "POST",
-                json: true,
-                body: discordObj,
-                headers: {
-                    "content-type": "application/json",
-                }
-            }, function (error, response, body) {
-                console.log('error:', error); // Print the error if one occurred
-                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            })
-        } else {
-            console.log("Post filtered out, not ChromeOS related.");
-        }
-    })
-})
+	return description;
+}
 
-apWatcher.on('new entries', function(entries) { // watch for new entries to the RSS feed
-    entries.forEach(function(entry) {
-        console.log(entry.title);
-        if ((entry.categories.includes("deal") || entry.categories.includes("deals") || entry.categories.includes("Deal") || entry.categories.includes("Deals") || entry.categories.includes("Sales") || entry.categories.includes("sales")) && ((entry.categories.includes("chromebook") || entry.categories.includes("Chromebook") || entry.categories.includes("chromebooks") || entry.categories.includes("Chromebooks") || entry.categories.includes("chromeos") || entry.categories.includes("ChromeOS")) || (entry.title.toLowerCase().includes("chromebook") || entry.title.toLowerCase().includes("chromebooks")))) { // filter out non-deal related posts
-            console.log("Attempting to send new post with title '" + entry.title)
-            var discordObj = { // build the response to send to Discord's webhook - base layout
-                "username": "AndroidPolice.com", 
-                "avatar_url": "https://lh4.googleusercontent.com/-2lq9WcxRgB0/AAAAAAAAAAI/AAAAAAAAAQk/u15SBRi49fE/s250-c-k/photo.jpg",
-                "content": "Error finding category type!",
-                "embeds": [{
-                    "description": "Error finding post description!",
-                    "color": 3172587,
-                    "timestamp": null,
-                    // "image": {
-                    //     "url": null
-                    // },
-                    "footer": {
-                        "icon_url": "https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
-                        "text": "Error finding author name!"
-                    },
-                    "author": {
-                        "name": "Error finding post title!",
-                        "url": "Error finding link!",
-                    "icon_url": "https://cdn.discordapp.com/emojis/363434654000349184.png?v=1"
-                    }
-                }]
-            }
-            var description = entry.description.replace(/[\r\n]/g, ' ').replace(" .", '.') // we want to remove any line breaks from the blog post.
+function prepareObject(articleDetails) {
+	return {
+		// build the response to send to Discord's webhook - base layout
+		username: articleDetails.publisher,
+		avatar_url: articleDetails.profilePicture,
+		content: articleDetails.summary,
+		embeds: [
+			{
+				description: articleDetails.entry.description,
+				color: 3172587,
+				timestamp: null,
+				footer: {
+					icon_url:
+						"https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
+					text: articleDetails.entry.author
+				},
+				author: {
+					name: articleDetails.entry.title,
+					url: articleDetails.entry.link,
+					icon_url:
+						"https://cdn.discordapp.com/emojis/363434654000349184.png?v=1"
+				}
+			}
+		]
+	};
+}
 
-            description = description.replace(/<(?:.|\n)*?>/gm, '').replace("&nbsp;", " "); // for some reason they add HTML to the post content. Let's remove that.
-
-            if (description.length > 150) { // truncate the description if more than 150 characters
-                description = description.substring(0, 150).concat("...");
-            }
-            
-            var summary = "<@&550081231266643968> A new deal has been posted on https://androidpolice.com! Click the title below to get more information."
-
-            // add the information specific to the blog post to the response object
-            discordObj.embeds[0].description = description;
-            discordObj.embeds[0].timestamp = entry.pubDate;
-            discordObj.embeds[0].footer.text = entry.author;
-            discordObj.embeds[0].author.name = entry.title;
-            discordObj.embeds[0].author.url = entry.link;
-            // discordObj.embeds[0].image.url = entry.image.url;
-            discordObj.content = summary;
-            
-            // send the object via POST to Discord's webhook URL
-
-            var url = webhookUrl;
-            request({ 
-                url: url, 
-                method: "POST",
-                json: true,
-                body: discordObj,
-                headers: {
-                    "content-type": "application/json",
-                }
-            }, function (error, response, body) {
-                console.log('error:', error); // Print the error if one occurred
-                console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            })
-        } else {
-            console.log("Post filtered out, not ChromeOS related.");
-        }
-    })
-})
-
-abcWatcher
-    .start()
-    .catch(function(error) {
-      console.error(error)
-    })
-
-apWatcher
-    .start()
-    .catch(function(error) {
-      console.error(error)
-    })
-
-abcWatcher.stop();
+function sendEmbed(embedObjectToSend) {
+	// send the object via POST to Discord's webhook URL
+	var url = webhookUrl;
+	request(
+		{
+			url: url,
+			method: "POST",
+			json: true,
+			body: embedObjectToSend,
+			headers: {
+				"content-type": "application/json"
+			}
+		},
+		function(error, response, body) {
+			console.log("error:", error); // Print the error if one occurred
+			console.log("statusCode:", response && response.statusCode); // Print the response status code if a response was received
+		}
+	);
+}
