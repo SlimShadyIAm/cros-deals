@@ -24,16 +24,14 @@ const feeds = [
 ];
 var interval = 20; // interval to poll feeds
 
-// var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
-var webhookUrl =
-	"https://discordapp.com/api/webhooks/607778792274133013/37uldJBGAyZu4BHZNIWS1oafDiBR7UPo86LwMyTVTqAw0am2YT03RL9yA8kgaWvuzLk1";
+var webhookUrl = process.env.dealsWebhook; // stores the URL the response needs to be sent to - secret!
 
 feeds.map(feed => {
 	const watcher = new Watcher(feed.feed, interval);
 	watcher.on("new entries", function(entries) {
 		// watch for new entries to the RSS feed
 		entries.forEach(function(entry) {
-			if (true) {
+			if (checkFilters(entry.categories, feed.filters, feed.requiredFiters)) {
 				articleDetails = {
 					publisher: feed.name,
 					description: sanitizeArticle(entry.description),
