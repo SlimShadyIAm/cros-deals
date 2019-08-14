@@ -31,7 +31,7 @@ feeds.map(feed => {
 	watcher.on("new entries", function(entries) {
 		// watch for new entries to the RSS feed
 		entries.forEach(function(entry) {
-			if (checkFilters(entry.categories, feed.filters, feed.requiredFiters)) {
+			if (checkFilters(entry.categories, feed.filters, feed.mustHaveFilters)) {
 				articleDetails = {
 					publisher: feed.name,
 					description: sanitizeArticle(entry.description),
