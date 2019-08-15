@@ -11,7 +11,7 @@ const feeds = [
 		profilePicture:
 			"https://cdn.discordapp.com/emojis/363434654000349184.png?v=1",
 		filters: ["deal", "deals"],
-		requiredFiters: []
+		requiredFilters: []
 	},
 	{
 		feed: "https://www.androidpolice.com/feed/",
@@ -19,7 +19,7 @@ const feeds = [
 		profilePicture:
 			"https://lh4.googleusercontent.com/-2lq9WcxRgB0/AAAAAAAAAAI/AAAAAAAAAQk/u15SBRi49fE/s250-c-k/photo.jpg",
 		filters: ["deal", "deals", "sale", "sales"],
-		mustHaveFilters: ["chromebook", "chromebooks", "chromeos"]
+		requiredFilters: ["chromebook", "chromebooks", "chromeos"]
 	}
 ];
 var interval = 20; // interval to poll feeds
@@ -31,7 +31,7 @@ feeds.map(feed => {
 	watcher.on("new entries", function(entries) {
 		// watch for new entries to the RSS feed
 		entries.forEach(function(entry) {
-			if (checkFilters(entry.categories, feed.filters, feed.mustHaveFilters)) {
+			if (checkFilters(entry.categories, feed.filters, feed.requiredFilters)) {
 				articleDetails = {
 					publisher: feed.name,
 					description: sanitizeArticle(entry.description),
