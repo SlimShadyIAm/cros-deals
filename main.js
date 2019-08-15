@@ -64,13 +64,13 @@ feeds.map(feed => {
 	console.log(`Starting ${feed.name} watcher.`);
 });
 
-function checkFilters(articleCategories, filters, requiredFiters) {
+function checkFilters(articleCategories, filters, requiredFilters) {
 	articleCategories.map(category => {
 		category.toLowerCase();
 	});
 
 	var found = false;
-	if (requiredFiters.length === 0) {
+	if (requiredFilters.length === 0) {
 		filters.map(filter => {
 			if (articleCategories.includes(filter)) {
 				found = true;
