@@ -20,6 +20,14 @@ const feeds = [
 			"https://lh4.googleusercontent.com/-2lq9WcxRgB0/AAAAAAAAAAI/AAAAAAAAAQk/u15SBRi49fE/s250-c-k/photo.jpg",
 		filters: ["deal", "deals", "sale", "sales"],
 		requiredFilters: ["chromebook", "chromebooks", "chromeos"]
+	},
+	{
+		feed: "https://www.androidauthority.com/feed/",
+		name: "AndroidAuthority.com",
+		profilePicture:
+			"https://images-na.ssl-images-amazon.com/images/I/51L8Vd5bndL._SY355_.png",
+		filters: ["deal", "deals", "sale", "sales"],
+		requiredFilters: ["chromebook", "chromebooks", "chromeos"]
 	}
 ];
 var interval = 20; // interval to poll feeds
