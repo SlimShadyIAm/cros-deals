@@ -50,11 +50,19 @@ feeds.map(feed => {
 					}. Click the title below to get more information.`
 				};
 
-				console.log(`Attempting to send new post with title ${entry.title}`);
+				console.log(
+					`Attempting to send new post with title ${
+						entry.title
+					} from publisher ${feed.name}`
+				);
 				var preparedObject = prepareObject(articleDetails);
 				sendEmbed(preparedObject);
 			} else {
-				console.log(`Post ${entry.title} filtered out, not ChromeOS related.`);
+				console.log(
+					`Post ${entry.title} from publisher ${
+						feed.name
+					} filtered out, not ChromeOS related.`
+				);
 			}
 		});
 	});
