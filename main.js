@@ -2,7 +2,7 @@ const Watcher = require("feed-watcher");
 const request = require("request");
 const stripTags = require("striptags");
 const he = require("he");
-//test comment
+
 const feeds = [
 	// list of feeds to watch
 	{
